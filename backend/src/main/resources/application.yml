@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: gamecollection
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: true
+  flyway:
+    enabled: true
+
+server:
+  port: 8080
