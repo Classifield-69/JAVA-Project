@@ -3,6 +3,8 @@ package com.gamecollection.config;
 import com.gamecollection.repository.UserRepository;
 import com.gamecollection.security.JwtAuthenticationFilter;
 import com.gamecollection.security.JwtService;
+import com.gamecollection.security.OAuth2FailureHandler;
+import com.gamecollection.security.OAuth2SuccessHandler;
 import com.gamecollection.security.SecurityErrorHandler;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,8 @@ public class SecurityConfig {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final SecurityErrorHandler securityErrorHandler;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,10 +43,14 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(basic -> basic.disable())
                 .formLogin(form -> form.disable())
+                .oauth2Login(oauth -> oauth
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/games/**", "/api/genres", "/api/platforms").permitAll()
                         .requestMatchers("/actuator/health", "/error").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
