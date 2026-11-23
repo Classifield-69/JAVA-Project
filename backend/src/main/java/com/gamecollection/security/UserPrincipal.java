@@ -16,6 +16,11 @@ public class UserPrincipal implements UserDetails {
 
     private final User user;
 
+    /** ID на потребителя от базата (за проверките за собственик). */
+    public Long getId() {
+        return user.getId();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));

@@ -1,6 +1,9 @@
 package com.gamecollection.repository;
 
 import com.gamecollection.entity.Review;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,4 +28,15 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             GROUP BY r.game.id
             """)
     List<Object[]> findAverageRatings(@Param("gameIds") Collection<Long> gameIds);
+
+    // Има ли вече ревю от този потребител за тази игра (→ 409)
+    boolean existsByUserIdAndGameId(Long userId, Long gameId);
+
+    // Ревютата на една игра, с пагинация; user и game идват със същата заявка (без N+1)
+    @EntityGraph(attributePaths = {"user", "game"})
+    Page<Review> findByGameId(Long gameId, Pageable pageable);
+
+    // Моите ревюта, най-новите първи
+    @EntityGraph(attributePaths = {"user", "game"})
+    List<Review> findByUserIdOrderByIdDesc(Long userId);
 }
