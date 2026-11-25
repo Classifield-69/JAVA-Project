@@ -39,7 +39,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             target = redirectUri + "#error=" + e.getError().getErrorCode();
         }
 
-        // сесията трябваше само по време на разговора с Google; оттук нататък сме stateless
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
