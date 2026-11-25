@@ -20,7 +20,7 @@ public class GoogleUserService {
 
     @Transactional
     public User findOrCreate(OidcUser googleUser) {
-        String googleId = googleUser.getSubject();           // постоянното ID в Google
+        String googleId = googleUser.getSubject();
         String email = googleUser.getEmail();
 
         if (email == null || !Boolean.TRUE.equals(googleUser.getEmailVerified())) {
@@ -28,14 +28,12 @@ public class GoogleUserService {
         }
         email = email.toLowerCase(Locale.ROOT);
 
-        // 1) Влизал ли е вече с Google?
         Optional<User> byGoogleId = userRepository.findByProviderId(googleId);
         User user;
 
         if (byGoogleId.isPresent()) {
             user = byGoogleId.get();
         } else {
-            // 2) Има ли акаунт със същия имейл (напр. LOCAL)? → свързваме го
             Optional<User> byEmail = userRepository.findByEmailIgnoreCase(email);
             if (byEmail.isPresent()) {
                 user = byEmail.get();
@@ -43,16 +41,13 @@ public class GoogleUserService {
                 if (user.getAvatarUrl() == null) {
                     user.setAvatarUrl(googleUser.getPicture());
                 }
-                // без save(): dirty checking в транзакцията
             } else {
-                // 3) Съвсем нов потребител
                 user = new User();
                 user.setEmail(email);
                 user.setUsername(generateUsername(email));
                 user.setAuthProvider(AuthProvider.GOOGLE);
                 user.setProviderId(googleId);
                 user.setAvatarUrl(googleUser.getPicture());
-                // passwordHash остава null
                 user = userRepository.save(user);
             }
         }
@@ -63,7 +58,6 @@ public class GoogleUserService {
         return user;
     }
 
-    // peter.zahariev@gmail.com → peter_zahariev (или peter_zahariev1, ако е заето)
     private String generateUsername(String email) {
         String base = email.substring(0, email.indexOf('@')).replaceAll("[^A-Za-z0-9_]", "_");
         if (base.length() < 3) {
